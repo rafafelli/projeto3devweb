@@ -43,6 +43,10 @@ async function loadRecords(limit) {
 
     document.getElementById("loading").style.display = "block";
     try {
+        if (startIndex >= 103) {
+            limit = maxRecords - startIndex + 1;
+        }
+
         const response = await fetch(`https://ucsdiscosapi.azurewebsites.net/Discos/records?numeroInicio=${startIndex}&quantidade=${limit}`, {
             method: "GET",
             headers: {
@@ -69,7 +73,11 @@ async function loadRecords(limit) {
         });
 
         startIndex += limit;
-        if (startIndex > maxRecords) startIndex = 1;
+
+        if (startIndex > maxRecords) {
+            startIndex = 1;
+            limit = 4;
+        }
     } catch (error) {
         console.error("Erro ao carregar registros:", error);
         alert("Erro ao carregar registros. Por favor, tente novamente.");
@@ -78,6 +86,7 @@ async function loadRecords(limit) {
         document.getElementById("loading").style.display = "none";
     }
 }
+
 
 async function loadAlbumDetails(id) {
     if (!token) {
@@ -114,7 +123,6 @@ async function loadAlbumDetails(id) {
         alert("Erro ao carregar detalhes do álbum. Por favor, tente novamente.");
     }
 }
-
 
 document.getElementById("albumContainer").addEventListener("click", (e) => {
     if (e.target.classList.contains("clickable")) {
