@@ -1,0 +1,17 @@
+body {
+    background-color: #f8f9fa;
+}
+
+h1 {
+    font-size: 2rem;
+    color: #333;
+}
+
+.clickable {
+    cursor: pointer;
+    transition: transform 0.2s ease-in-out;
+}
+
+.clickable:hover {
+    transform: scale(1.05);
+}
