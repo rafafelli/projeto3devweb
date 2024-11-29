@@ -1,8 +1,11 @@
 const apiKey = "8175fA5f6098c5301022f475da32a2aa";
 let token = null;
 let startIndex = 1;
-const limit = 12;
+const initialLimit = 12;
+const scrollLimit = 4;
 const maxRecords = 105;
+
+let isLoading = false;
 
 async function authenticate() {
     try {
@@ -25,7 +28,7 @@ async function authenticate() {
     }
 }
 
-async function loadRecords() {
+async function loadRecords(limit) {
     if (!token) {
         console.error("Token de autenticação ausente. Tentando autenticar novamente...");
         await authenticate();
@@ -35,12 +38,15 @@ async function loadRecords() {
         }
     }
 
+    if (isLoading) return;
+    isLoading = true;
+
     document.getElementById("loading").style.display = "block";
     try {
         const response = await fetch(`https://ucsdiscosapi.azurewebsites.net/Discos/records?numeroInicio=${startIndex}&quantidade=${limit}`, {
             method: "GET",
             headers: {
-                TokenApiUCS: token // Token passado no header
+                TokenApiUCS: token
             }
         });
 
@@ -63,12 +69,13 @@ async function loadRecords() {
         });
 
         startIndex += limit;
-        if (startIndex >= maxRecords) startIndex = 0;
-
-        document.getElementById("loading").style.display = "none";
+        if (startIndex > maxRecords) startIndex = 1;
     } catch (error) {
         console.error("Erro ao carregar registros:", error);
         alert("Erro ao carregar registros. Por favor, tente novamente.");
+    } finally {
+        isLoading = false;
+        document.getElementById("loading").style.display = "none";
     }
 }
 
@@ -93,8 +100,14 @@ async function loadAlbumDetails(id) {
         if (!response.ok) throw new Error("Erro ao buscar detalhes do álbum");
 
         const details = await response.json();
+
         document.getElementById("modalImage").src = `data:image/png;base64,${details.imagemEmBase64}`;
-        document.getElementById("albumDetails").textContent = `ID: ${details.id}`;
+        document.getElementById("albumDetails").innerHTML = `
+            <p><strong>ID:</strong> ${details.id}</p>
+            <p><strong>Descrição Primária:</strong> ${details.descricaoPrimaria}</p>
+            <p><strong>Descrição Secundária:</strong> ${details.descricaoSecundaria}</p>
+        `;
+
         new bootstrap.Modal(document.getElementById("albumModal")).show();
     } catch (error) {
         console.error("Erro ao carregar detalhes do álbum:", error);
@@ -102,7 +115,7 @@ async function loadAlbumDetails(id) {
     }
 }
 
-// Event listener para exibir o modal ao clicar na imagem
+
 document.getElementById("albumContainer").addEventListener("click", (e) => {
     if (e.target.classList.contains("clickable")) {
         const albumId = e.target.getAttribute("data-id");
@@ -110,16 +123,14 @@ document.getElementById("albumContainer").addEventListener("click", (e) => {
     }
 });
 
-// Event listener para implementar a rolagem infinita
 window.addEventListener("scroll", () => {
     if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
-        loadRecords();
+        loadRecords(scrollLimit);
     }
 });
 
-// Inicializa a página carregando os primeiros registros
 document.addEventListener("DOMContentLoaded", async () => {
     console.log("Iniciando a página...");
     await authenticate();
-    loadRecords();
+    loadRecords(initialLimit);
 });
