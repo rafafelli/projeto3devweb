@@ -4,14 +4,13 @@ let startIndex = 1;
 const limit = 12;
 const maxRecords = 105;
 
-// Função para autenticar e obter o token
 async function authenticate() {
     try {
         const response = await fetch("https://ucsdiscosapi.azurewebsites.net/Discos/autenticar", {
             method: "POST",
             headers: { 
                 accept: "*/*",
-                ChaveApi: apiKey // Incluindo a API Key no header
+                ChaveApi: apiKey
             }
         });
 
@@ -26,7 +25,6 @@ async function authenticate() {
     }
 }
 
-// Função para carregar registros (GET /records)
 async function loadRecords() {
     if (!token) {
         console.error("Token de autenticação ausente. Tentando autenticar novamente...");
@@ -64,7 +62,6 @@ async function loadRecords() {
             container.appendChild(col);
         });
 
-        // Atualiza índice e retorna ao início, se necessário
         startIndex += limit;
         if (startIndex >= maxRecords) startIndex = 0;
 
@@ -75,7 +72,6 @@ async function loadRecords() {
     }
 }
 
-// Função para buscar detalhes do álbum (GET /record)
 async function loadAlbumDetails(id) {
     if (!token) {
         console.error("Token de autenticação ausente. Tentando autenticar novamente...");
@@ -90,7 +86,7 @@ async function loadAlbumDetails(id) {
         const response = await fetch(`https://ucsdiscosapi.azurewebsites.net/Discos/record?numero=${id}`, {
             method: "GET",
             headers: {
-                "TokenApiUCS": token // Token passado no header
+                TokenApiUCS: token
             }
         });
 
